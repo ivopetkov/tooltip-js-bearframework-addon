@@ -1,0 +1,31 @@
+{
+    "name": "ivopetkov/tooltip-js-bearframework-addon",
+    "description": "Tooltip JS package for Bear Framework",
+    "keywords": [
+        "tooltip",
+        "Bear Framework addon"
+    ],
+    "homepage": "https://github.com/ivopetkov/tooltip-js-bearframework-addon",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ivo Petkov",
+            "email": "ivo@ivopetkov.com",
+            "homepage": "http://ivopetkov.com"
+        }
+    ],
+    "require": {
+        "php": "7.1.*|7.2.*|7.3.*|7.4.*|8.0.*|8.1.*|8.2.*",
+        "bearframework/bearframework": "1.*",
+        "ivopetkov/client-packages-bearframework-addon": "1.*",
+        "ivopetkov/escape-key-js-bearframework-addon": "1.*"
+    },
+    "require-dev": {
+        "bearframework/addon-tests": "1.*"
+    },
+    "autoload": {
+        "files": [
+            "autoload.php"
+        ]
+    }
+}
