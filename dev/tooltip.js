@@ -55,10 +55,10 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         var containerRect = container.getBoundingClientRect();
         var targetLeft = targetRect.left;
         var targetTop = targetRect.top;
-        var targetWidth = Math.ceil(targetRect.width);
-        var targetHeight = Math.ceil(targetRect.height);
-        var contentWidth = Math.ceil(elementRect.width);
-        var contentHeight = Math.ceil(elementRect.height);
+        var targetWidth = targetRect.width;
+        var targetHeight = targetRect.height;
+        var contentWidth = elementRect.width;
+        var contentHeight = elementRect.height;
 
         var parentsWithScroll = getParentsWithScroll(target);
         for (var i = -1; i < parentsWithScroll.length; i++) {
@@ -199,15 +199,15 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
                     'left': 'transparent transparent transparent ' + arrowColor,
                     'right': 'transparent ' + arrowColor + ' transparent transparent',
                 };
-                element.style.setProperty('--tooltip-arrow-size', arrowSize + 'px');
-                element.style.setProperty('--tooltip-arrow-colors', colors[selectedPosition]);
-                element.style.setProperty('--tooltip-arrow-display', 'block');
-                element.style.setProperty('--tooltip-arrow-left', arrowLeft + 'px');
-                element.style.setProperty('--tooltip-arrow-top', arrowTop + 'px');
+                element.style.setProperty('--tooltip-internal-arrow-size', arrowSize + 'px');
+                element.style.setProperty('--tooltip-internal-arrow-colors', colors[selectedPosition]);
+                element.style.setProperty('--tooltip-internal-arrow-display', 'block');
+                element.style.setProperty('--tooltip-internal-arrow-left', arrowLeft + 'px');
+                element.style.setProperty('--tooltip-internal-arrow-top', arrowTop + 'px');
             } else {
-                element.style.removeProperty('--tooltip-arrow-display');
-                element.style.removeProperty('--tooltip-arrow-left');
-                element.style.removeProperty('--tooltip-arrow-top');
+                element.style.removeProperty('--tooltip-internal-arrow-display');
+                element.style.removeProperty('--tooltip-internal-arrow-left');
+                element.style.removeProperty('--tooltip-internal-arrow-top');
             }
         }
 
@@ -240,12 +240,6 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         if (typeof options.showArrow === 'undefined') { // true, false
             options.showArrow = true;
         }
-        if (typeof options.contentSpacing === 'undefined') {
-            options.contentSpacing = 12;
-        }
-        if (typeof options.arrowSize === 'undefined') {
-            options.arrowSize = 8;
-        }
         if (typeof options.preferedPositions === 'undefined') {
             options.preferedPositions = ['bottom', 'top', 'left', 'right'];
         }
@@ -254,6 +248,12 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         }
         if (typeof options.hideOnWindowWidthChange === 'undefined') {
             options.hideOnWindowWidthChange = false;
+        }
+        if (typeof options.hideOnClick === 'undefined') {
+            options.hideOnClick = false;
+        }
+        if (typeof options.hideOnKeyDown === 'undefined') {
+            options.hideOnKeyDown = false;
         }
 
         var escapeKeyHandler = function () {
@@ -291,7 +291,6 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             }
             return defaultValue;
         };
-        elements[id] = [target, element, escapeKeyHandler, options, fixedParent];
         if (typeof options.onBeforeShow !== 'undefined') {
             try {
                 options.onBeforeShow(element);
@@ -299,6 +298,20 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
 
             }
         }
+        getStyleValue('--form-tooltip-arrow-size', '');
+        if (typeof options.contentSpacing === 'undefined') {
+            options.contentSpacing = parseInt(getStyleValue('--tooltip-content-spacing', '12px').replace('px', ''));
+        }
+        if (typeof options.arrowSize === 'undefined') {
+            options.arrowSize = parseInt(getStyleValue('--tooltip-arrow-size', '8px').replace('px', ''));
+        }
+        if (typeof options.maxWidth === 'undefined') {
+            options.maxWidth = getStyleValue('--tooltip-max-width', null);
+        }
+        if (options.maxWidth !== null) {
+            element.style.maxWidth = options.maxWidth;
+        }
+        elements[id] = [target, element, escapeKeyHandler, options, fixedParent];
         // a style might be added in onBeforeShow
         element.style.backgroundColor = getStyleValue('--tooltip-background-color', '#eee');
         element.style.border = getStyleValue('--tooltip-border');
@@ -318,7 +331,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             }
             var elementData = elements[id];
             var element = elementData[1];
-            var options = elementData[3];
+            var options = getElementOptions(id);
             escapeKey.removeHandler(elementData[2]);
             element.parentNode.removeChild(element);
             delete elements[id];
@@ -478,12 +491,16 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
     var checkHideOnWindowWidthChange = function () {
         if (currentWindowWidth !== window.innerWidth) {
             for (var id in elements) {
-                if (elements[id][3].hideOnWindowWidthChange) {
+                if (getElementOptions(id).hideOnWindowWidthChange) {
                     hide(id);
                 }
             }
             currentWindowWidth = window.innerWidth;
         }
+    };
+
+    var getElementOptions = function (id) {
+        return typeof elements[id] !== 'undefined' ? elements[id][3] : null;
     };
 
     var initialized = false;
@@ -494,6 +511,10 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
                 var eventTarget = event.target;
                 var elementsToKeep = [];
                 for (var id in elements) {
+                    var options = getElementOptions(id);
+                    if (options.hideOnClick) {
+                        continue;
+                    }
                     if (isElementInsideTarget(id, eventTarget) || isElementInsideTooltip(id, eventTarget)) {
                         elementsToKeep.push(id);
                         elementsToKeep = elementsToKeep.concat(getParentTooltips(id));
@@ -506,6 +527,14 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
                     }
                 }
             });
+            document.body.addEventListener('keydown', function () {
+                for (var id in elements) {
+                    var options = getElementOptions(id);
+                    if (options.hideOnKeyDown) {
+                        hide(id);
+                    }
+                }
+            });
             window.addEventListener('resize', checkHideOnWindowWidthChange);
             document.addEventListener('scroll', updatePositionOnAnimationFrame);
             window.addEventListener('resize', updatePositionOnAnimationFrame);
@@ -513,7 +542,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
 
             var style = document.createElement('style');
             var content = '[data-tooltip]{position:relative;box-sizing:border-box;max-width:calc(100vw - ' + (2 * windowSpacing) + 'px);max-height:calc(100vh - ' + (2 * windowSpacing) + 'px);}';
-            content += '[data-tooltip]:before{content:"";top:0;left:0;display:block;width:0;height:0;border-color:var(--tooltip-arrow-colors);border-width:var(--tooltip-arrow-size,0);border-style:solid;z-index:1;position:absolute;transform:rotate(0);display:var(--tooltip-arrow-display,none);top:var(--tooltip-arrow-top,0);left:var(--tooltip-arrow-left,0);}';
+            content += '[data-tooltip]:before{content:"";top:0;left:0;display:block;width:0;height:0;border-color:var(--tooltip-internal-arrow-colors);border-width:var(--tooltip-internal-arrow-size,0);border-style:solid;z-index:1;position:absolute;transform:rotate(0);display:var(--tooltip-internal-arrow-display,none);top:var(--tooltip-internal-arrow-top,0);left:var(--tooltip-internal-arrow-left,0);}';
             style.innerHTML = content;
             document.head.appendChild(style);
         }
