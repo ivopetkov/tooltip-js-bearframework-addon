@@ -275,6 +275,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         var parentZIndex = getParentZIndex(target);
         var element = document.createElement('div');
         element.setAttribute('data-tooltip', '');
+        element.setAttribute('role', 'tooltip');
         element.style.position = fixedParent !== null ? 'fixed' : 'absolute';
         element.style.zIndex = (parentZIndex !== null ? parentZIndex : 0) + 10;
         if (typeof content === 'string') {
@@ -291,36 +292,55 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             }
             return defaultValue;
         };
+        var promiseToWait = null;
         if (typeof options.onBeforeShow !== 'undefined') {
             try {
-                options.onBeforeShow(element);
+                var result = options.onBeforeShow(element);
+                if (typeof result === 'object' && typeof result.then === 'function') {
+                    promiseToWait = result;
+                }
             } catch (e) {
 
             }
         }
-        getStyleValue('--form-tooltip-arrow-size', '');
-        if (typeof options.contentSpacing === 'undefined') {
-            options.contentSpacing = parseInt(getStyleValue('--tooltip-content-spacing', '12px').replace('px', ''));
-        }
-        if (typeof options.arrowSize === 'undefined') {
-            options.arrowSize = parseInt(getStyleValue('--tooltip-arrow-size', '8px').replace('px', ''));
-        }
-        if (typeof options.maxWidth === 'undefined') {
-            options.maxWidth = getStyleValue('--tooltip-max-width', null);
-        }
-        if (options.maxWidth !== null) {
-            element.style.maxWidth = options.maxWidth;
-        }
-        elements[id] = [target, element, escapeKeyHandler, options, fixedParent];
-        // a style might be added in onBeforeShow
-        element.style.backgroundColor = getStyleValue('--tooltip-background-color', '#eee');
-        element.style.border = getStyleValue('--tooltip-border');
-        element.style.borderRadius = getStyleValue('--tooltip-border-radius');
-        updatePosition(id);
 
-        addParentsOnScroll(target);
+        var continueShow = function () {
+            getStyleValue('--form-tooltip-arrow-size', '');
+            if (typeof options.contentSpacing === 'undefined') {
+                options.contentSpacing = parseInt(getStyleValue('--tooltip-content-spacing', '12px').replace('px', ''));
+            }
+            if (typeof options.arrowSize === 'undefined') {
+                options.arrowSize = parseInt(getStyleValue('--tooltip-arrow-size', '8px').replace('px', ''));
+            }
+            if (typeof options.maxWidth === 'undefined') {
+                options.maxWidth = getStyleValue('--tooltip-max-width', null);
+            }
+            if (options.maxWidth !== null) {
+                element.style.maxWidth = options.maxWidth;
+            }
+            elements[id] = [target, element, escapeKeyHandler, options, fixedParent];
+            // a style might be added in onBeforeShow
+            element.style.backgroundColor = getStyleValue('--tooltip-background-color', '#eee');
+            element.style.border = getStyleValue('--tooltip-border');
+            element.style.borderRadius = getStyleValue('--tooltip-border-radius');
+            updatePosition(id);
 
-        escapeKey.addHandler(escapeKeyHandler);
+            addParentsOnScroll(target);
+
+            // var r = document.createElement('div');
+            // r.setAttribute('role', 'alert');
+            // r.setAttribute('aria-live', 'assertive');
+            // r.setAttribute('aria-atomic', 'true');
+            // contentContainer.appendChild(r);
+            // r.innerHTML = 'TEST FOR NARATOR';
+
+            escapeKey.addHandler(escapeKeyHandler);
+        };
+        if (promiseToWait !== null) {
+            promiseToWait.then(continueShow);
+        } else {
+            continueShow();
+        }
     };
 
     var hide = function (id) {
