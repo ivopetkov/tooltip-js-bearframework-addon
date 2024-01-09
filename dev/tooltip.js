@@ -335,6 +335,14 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             // r.innerHTML = 'TEST FOR NARATOR';
 
             escapeKey.addHandler(escapeKeyHandler);
+
+            if (typeof options.onShow !== 'undefined') {
+                try {
+                    options.onShow(element);
+                } catch (e) {
+
+                }
+            }
         };
         if (promiseToWait !== null) {
             promiseToWait.then(continueShow);
