@@ -38,7 +38,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         var fixedParent = elementData[4];
 
         var align = options.align;
-        var showArrow = options.showArrow;
+        //var showArrow = options.showArrow; // DEPRECATED
         var contentSpacing = options.contentSpacing;
         var arrowSize = options.arrowSize;
         var arrowColor = element.style.backgroundColor;
@@ -173,7 +173,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             top = windowHeight - windowSpacing - contentHeight;
         }
 
-        if (showArrow) {
+        if (arrowSize > 0) {
             var arrowLeft = null;
             var arrowTop = null;
             if (!notEnoughWidth && !notEnoughHeight) {
@@ -237,8 +237,8 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         if (typeof options.align === 'undefined') { // start, center, end
             options.align = 'center';
         }
-        if (typeof options.showArrow === 'undefined') { // true, false
-            options.showArrow = true;
+        if (typeof options.showArrow !== 'undefined' && options.showArrow === false) { // true, false // DEPRECATED
+            options.arrowSize = 0;
         }
         if (typeof options.preferedPositions === 'undefined') {
             options.preferedPositions = ['bottom', 'top', 'left', 'right'];
@@ -305,7 +305,6 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         }
 
         var continueShow = function () {
-            getStyleValue('--form-tooltip-arrow-size', '');
             if (typeof options.contentSpacing === 'undefined') {
                 options.contentSpacing = parseInt(getStyleValue('--tooltip-content-spacing', '12px').replace('px', ''));
             }
