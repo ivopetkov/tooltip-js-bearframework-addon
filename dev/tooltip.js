@@ -572,6 +572,16 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
             content += '[data-tooltip]:before{content:"";top:0;left:0;display:block;width:0;height:0;border-color:var(--tooltip-internal-arrow-colors);border-width:var(--tooltip-internal-arrow-size,0);border-style:solid;z-index:1;position:absolute;transform:rotate(0);display:var(--tooltip-internal-arrow-display,none);top:var(--tooltip-internal-arrow-top,0);left:var(--tooltip-internal-arrow-left,0);}';
             style.innerHTML = content;
             document.head.appendChild(style);
+
+            if (typeof MutationObserver !== "undefined") {
+                (new MutationObserver(function () {
+                    for (var id in elements) {
+                        if (!document.body.contains(elements[id][0])) {
+                            hide(id);
+                        }
+                    }
+                })).observe(document.body, { attributes: true, childList: true, subtree: true });
+            }
         }
     };
 
