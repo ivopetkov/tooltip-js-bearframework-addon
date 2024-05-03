@@ -382,6 +382,13 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         return typeof elements[id] !== 'undefined';
     };
 
+    var hasVisible = function () {
+        for (var id in elements) {
+            return true;
+        }
+        return false;
+    };
+
     var isElementInsideTarget = function (id, element) {
         if (typeof elements[id] !== 'undefined') {
             var elementData = elements[id];
@@ -613,6 +620,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         'hide': hide,
         'hideAll': hideAll,
         'isVisible': isVisible,
+        'hasVisible': hasVisible,
         'addClickListener': addClickListener
     };
 }());
