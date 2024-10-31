@@ -278,6 +278,12 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         element.setAttribute('role', 'tooltip');
         element.style.position = fixedParent !== null ? 'fixed' : 'absolute';
         element.style.zIndex = (parentZIndex !== null ? parentZIndex : 0) + 10;
+        if (typeof options.attributes !== 'undefined') {
+            var customAttributes = options.attributes;
+            for (var customAttributeName in customAttributes) {
+                element.setAttribute(customAttributeName, customAttributes[customAttributeName]);
+            }
+        }
         if (typeof content === 'string') {
             element.innerHTML = content;
         } else {
@@ -375,6 +381,14 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
     var hideAll = function () {
         for (var id in elements) {
             hide(id);
+        }
+    };
+
+    var toggle = function (id, target, content, options) {
+        if (isVisible(id)) {
+            hide(id);
+        } else {
+            show(id, target, content, options);
         }
     };
 
@@ -619,6 +633,7 @@ ivoPetkov.bearFrameworkAddons.tooltip = ivoPetkov.bearFrameworkAddons.tooltip ||
         'show': show,
         'hide': hide,
         'hideAll': hideAll,
+        'toggle': toggle,
         'isVisible': isVisible,
         'hasVisible': hasVisible,
         'addClickListener': addClickListener
